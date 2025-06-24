@@ -1,0 +1,27 @@
+# Hetzner Cloud Configuration
+hcloud_token    = "your-hetzner-cloud-api-token"
+hcloud_ssh_key  = "your-ssh-key-name-in-hetzner"
+
+# Domain Configuration
+domain_name = "sprantic.ai"  # Your main domain
+
+# Keycloak Configuration
+keycloak_admin_password = "your-secure-keycloak-admin-password"
+
+# System Configuration
+# Generate with: mkpasswd -m sha-512 your-password
+admin_crypted_passwd = "$6$rounds=4096$salt$hash..."
+
+# Optional: External Database Configuration
+# use_external_db = true
+# db_host = "your-database-host.com"
+# keycloak_db_password = "your-database-password"
+
+# WebFinger Configuration (automatically enabled in this example)
+webfinger_email = "admin@sprantic.ai"  # Email address for WebFinger subject
+
+# This will create:
+# - Keycloak at: https://auth.sprantic.ai
+# - WebFinger at: https://sprantic.ai/.well-known/webfinger
+# - OIDC Issuer: https://auth.sprantic.ai/realms/sprantic
+# - WebFinger Subject: acct:admin@sprantic.ai

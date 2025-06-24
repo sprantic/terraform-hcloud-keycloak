@@ -1,0 +1,15 @@
+# Hetzner Cloud Configuration
+hcloud_token   = "your-hetzner-cloud-api-token"
+hcloud_ssh_key = "your-ssh-key-name"
+
+# Domain Configuration
+domain_name         = "example.com"
+keycloak_subdomain  = "auth"
+
+# Keycloak Configuration
+keycloak_admin_user     = "admin"
+keycloak_admin_password = "your-secure-admin-password"
+
+# System Configuration
+# Generate with: mkpasswd -m sha-512 your-password
+admin_crypted_passwd = "$6$rounds=4096$saltsalt$hash..."
