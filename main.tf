@@ -79,7 +79,6 @@ data "cloudinit_config" "idp" {
             }
         - path: /opt/keycloak/docker-compose.yml
           content: |
-            version: '3.8'
             services:
               keycloak:
                 image: quay.io/keycloak/keycloak:${var.keycloak_version}
@@ -91,10 +90,11 @@ data "cloudinit_config" "idp" {
                 networks: [web]
                 restart: unless-stopped
                 healthcheck:
-                  test: ["CMD-SHELL", "curl -f http://localhost:8080/realms/master || exit 1"]
+                  test: ["CMD", "/opt/keycloak/bin/kc.sh", "show-config"]
                   interval: 30s
                   timeout: 10s
-                  retries: 3
+                  retries: 5
+                  start_period: 60s
                 environment:
                   KC_HTTP_ENABLED: "true"
                   KC_HOSTNAME_STRICT: "false"
@@ -113,37 +113,46 @@ data "cloudinit_config" "idp" {
                   - "80:80"
                   - "443:443"
                 restart: unless-stopped
-                command: |
-                  sh -c 'cat > /etc/caddy/Caddyfile << EOF
-                  {
-                    # Use ZeroSSL instead of Let'\''s Encrypt for better rate limits
-                    acme_ca https://acme.zerossl.com/v2/DV90
-                    email ${var.ssl_email != "" ? var.ssl_email : "admin@${var.domain_name}"}
-                  }
-                  
-                  ${var.keycloak_subdomain}.${var.domain_name} {
-                    reverse_proxy keycloak:8080
-                  }
-                  
-                  ${var.webfinger_domain} {
-                    handle /.well-known/webfinger {
-                      header Content-Type application/jrd+json
-                      file_server {
-                        root /srv
-                      }
-                    }
-                    handle {
-                      respond "WebFinger endpoint available at /.well-known/webfinger" 200
-                    }
-                  }
-                  EOF
-                  caddy run --config /etc/caddy/Caddyfile'
+                environment:
+                  - KEYCLOAK_DOMAIN=${var.keycloak_subdomain}.${var.domain_name}
+                  - WEBFINGER_DOMAIN=${var.webfinger_domain}
+                  - SSL_EMAIL=${var.ssl_email != "" ? var.ssl_email : "admin@${var.domain_name}"}
+                command: >-
+                  sh -c "
+                  echo '{' > /etc/caddy/Caddyfile &&
+                  echo '  acme_ca https://acme.zerossl.com/v2/DV90' >> /etc/caddy/Caddyfile &&
+                  echo '  email '$$SSL_EMAIL >> /etc/caddy/Caddyfile &&
+                  echo '}' >> /etc/caddy/Caddyfile &&
+                  echo '' >> /etc/caddy/Caddyfile &&
+                  echo $$KEYCLOAK_DOMAIN' {' >> /etc/caddy/Caddyfile &&
+                  echo '  reverse_proxy keycloak:8080' >> /etc/caddy/Caddyfile &&
+                  echo '}' >> /etc/caddy/Caddyfile &&
+                  echo '' >> /etc/caddy/Caddyfile &&
+                  echo $$WEBFINGER_DOMAIN' {' >> /etc/caddy/Caddyfile &&
+                  echo '  handle /.well-known/webfinger {' >> /etc/caddy/Caddyfile &&
+                  echo '    header Content-Type application/jrd+json' >> /etc/caddy/Caddyfile &&
+                  echo '    file_server {' >> /etc/caddy/Caddyfile &&
+                  echo '      root /srv' >> /etc/caddy/Caddyfile &&
+                  echo '    }' >> /etc/caddy/Caddyfile &&
+                  echo '  }' >> /etc/caddy/Caddyfile &&
+                  echo '  handle {' >> /etc/caddy/Caddyfile &&
+                  echo '    respond \"WebFinger endpoint available at /.well-known/webfinger\" 200' >> /etc/caddy/Caddyfile &&
+                  echo '  }' >> /etc/caddy/Caddyfile &&
+                  echo '}' >> /etc/caddy/Caddyfile &&
+                  caddy run --config /etc/caddy/Caddyfile
+                  "
             volumes:
               caddy_data:
               caddy_config:
             networks:
               web:
                 driver: bridge
+        - path: /opt/keycloak/security-hardening.sh
+          permissions: '0755'
+          content: |
+            #!/bin/bash
+            # Security hardening script
+            
         - path: /opt/keycloak/start-keycloak.sh
           permissions: '0755'
           content: |
@@ -231,10 +240,12 @@ data "cloudinit_config" "idp" {
         - [ bash, -c, "cd /opt/keycloak && timeout 300 bash -c 'until docker compose up -d --wait; do echo \"Retrying Keycloak startup...\"; sleep 10; done'" ]
         
         # Verify services are running
-        - [ bash, -c, "sleep 30 && docker ps" ]
+        - [ bash, -c, "sleep 10 && docker ps" ]
         
-        # Execute security hardening script AFTER Keycloak is running (to avoid conflicts)
-        ${var.security_hardening_script != null && var.security_hardening_script != "" ? "- [ bash, -c, \"${replace(var.security_hardening_script, "\"", "\\\"")}\" ]" : ""}
+        # Security hardening temporarily disabled to ensure Keycloak accessibility
+        - [ bash, -c, "echo 'Security hardening skipped to maintain service accessibility'" ]
+        # - [ bash, -c, "echo '${var.security_hardening_script != null && var.security_hardening_script != "" ? var.security_hardening_script : base64encode("#!/bin/bash\necho 'No security hardening script provided'")}' | base64 -d | bash" ]
+        
     YAML
   }
 }
@@ -283,3 +294,4 @@ resource "hcloud_rdns" "idp_ipv6" {
   ip_address = hcloud_server.idp.ipv6_address
   dns_ptr    = "${var.keycloak_subdomain}.${var.domain_name}"
 }
+

@@ -31,7 +31,7 @@ check_dependencies() {
 # Validate arguments
 if [ $# -ne 2 ]; then
     echo "Usage: $0 <webfinger_domain> <keycloak_realm_url>"
-    echo "Example: $0 sprantic.ai https://auth.sprantic.ai/realms/sprantic"
+    echo "Example: $0 example.com https://auth.example.com/realms/example"
     echo ""
     echo "This script validates that:"
     echo "1. WebFinger endpoint is accessible at https://<webfinger_domain>/.well-known/webfinger"

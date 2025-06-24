@@ -18,10 +18,6 @@ print_status() {
     echo -e "${color}${message}${NC}"
 }
 
-# Default values
-KEYCLOAK_URL="https://auth.sprantic.ai"
-REALM="sprantic"
-
 # Allow override via arguments
 if [ $# -ge 1 ]; then
     KEYCLOAK_URL=$1

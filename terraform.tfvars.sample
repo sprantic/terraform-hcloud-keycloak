@@ -36,4 +36,4 @@ admin_crypted_passwd = ""
 # enable_ipv6 = true
 
 # Optional: Custom Keycloak Version
-# keycloak_version = "24"
+# keycloak_version = "24.0.3"
