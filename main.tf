@@ -6,6 +6,10 @@
 # replace --proxy=edge with --proxy-headers=xforwarded
 # add environment variables to docker
 
+# introduce temporarily to support theme development
+#                  KC_FEATURES: "preview"
+#                  KC_SPI_THEME_CACHE_THEMES: "false"
+#                  KC_SPI_THEME_CACHE_TEMPLATES: "false" 
 
 data "hcloud_ssh_key" "me" {
   name = var.hcloud_ssh_key
@@ -54,6 +58,7 @@ data "cloudinit_config" "idp" {
 
       write_files:
         - path: /opt/keycloak/keycloak.env
+          permissions: '0640'
           content: |
             KEYCLOAK_ADMIN=${var.keycloak_admin_user}
             KEYCLOAK_ADMIN_PASSWORD=${var.keycloak_admin_password}
@@ -67,17 +72,19 @@ data "cloudinit_config" "idp" {
             ${var.use_external_db ? "KC_DB_USERNAME=${var.db_user}" : ""}
             ${var.use_external_db ? "KC_DB_PASSWORD=${var.keycloak_db_password}" : ""}
         - path: /opt/keycloak/.well-known/webfinger
+          permissions: '0644'
           content: |
             {
               "subject": "acct:${var.webfinger_email != "" ? var.webfinger_email : "admin@${var.webfinger_domain}"}",
               "links": [
                 {
                   "rel": "http://openid.net/specs/connect/1.0/issuer",
-                  "href": "${var.oidc_issuer_url != "" ? var.oidc_issuer_url : "https://${var.keycloak_subdomain}.${var.domain_name}/realms/sprantic"}"
+                  "href": "${var.oidc_issuer_url != "" ? var.oidc_issuer_url : "https://${var.keycloak_subdomain}.${var.domain_name}/realms/example"}"
                 }
               ]
             }
         - path: /opt/keycloak/docker-compose.yml
+          permissions: '0644'
           content: |
             services:
               keycloak:
@@ -102,6 +109,9 @@ data "cloudinit_config" "idp" {
                   KC_HOSTNAME_URL: "https://${var.keycloak_subdomain}.${var.domain_name}"
                   KC_HOSTNAME_ADMIN_URL: "https://${var.keycloak_subdomain}.${var.domain_name}"
                   QUARKUS_TRANSACTION_MANAGER_ENABLE_RECOVERY: "true"
+                  KC_FEATURES: "preview"
+                  KC_SPI_THEME_CACHE_THEMES: "false"
+                  KC_SPI_THEME_CACHE_TEMPLATES: "false"                  
               caddy:
                 image: caddy:2-alpine
                 volumes:
@@ -182,7 +192,7 @@ data "cloudinit_config" "idp" {
             
             log "Docker is ready!"
             
-            # Create directory if it doesn't exist
+            # Create directory if it doesn't exist (should already exist from cloud-init)
             mkdir -p /opt/keycloak
             cd /opt/keycloak
             
@@ -233,6 +243,12 @@ data "cloudinit_config" "idp" {
         - [ bash, -c, "systemctl start docker" ]
         - [ bash, -c, "usermod -aG docker admin" ]
         
+        # Create keycloak directory and set proper permissions for admin user
+        - [ bash, -c, "mkdir -p /opt/keycloak/.well-known" ]
+        - [ bash, -c, "chown -R admin:admin /opt/keycloak" ]
+        - [ bash, -c, "chmod 755 /opt/keycloak" ]
+        - [ bash, -c, "chmod 755 /opt/keycloak/.well-known" ]
+        
         # Wait for Docker to be fully ready
         - [ bash, -c, "timeout 120 bash -c 'until docker info >/dev/null 2>&1; do echo \"Waiting for Docker daemon...\"; sleep 5; done'" ]
         
@@ -241,6 +257,7 @@ data "cloudinit_config" "idp" {
         
         # Verify services are running
         - [ bash, -c, "sleep 10 && docker ps" ]
+        - [ bash, -c, "cd /opt/keycloak && docker compose ps" ]
         
         # Security hardening temporarily disabled to ensure Keycloak accessibility
         - [ bash, -c, "echo 'Security hardening skipped to maintain service accessibility'" ]

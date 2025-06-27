@@ -4,14 +4,14 @@ This example demonstrates how to deploy Keycloak with WebFinger configuration fo
 
 ## What This Creates
 
-- **Keycloak Server**: Identity provider at `https://auth.sprantic.ai`
-- **WebFinger Endpoint**: OIDC discovery at `https://sprantic.ai/.well-known/webfinger`
+- **Keycloak Server**: Identity provider at `https://auth.example.com`
+- **WebFinger Endpoint**: OIDC discovery at `https://example.com/.well-known/webfinger`
 - **Automatic SSL**: Let's Encrypt certificates for both domains
 - **Single Server**: Both endpoints served from the same Hetzner Cloud server
 
 ## Prerequisites
 
-1. **Domain Control**: You must control the main domain (e.g., `sprantic.ai`)
+1. **Domain Control**: You must control the main domain (e.g., `example.com`)
 2. **Hetzner Cloud Account**: With API token and SSH key uploaded
 3. **DNS Management**: Ability to create A/AAAA records for your domain
 
@@ -40,17 +40,17 @@ This example demonstrates how to deploy Keycloak with WebFinger configuration fo
    After deployment, create these DNS records:
    ```
    # Main domain (for WebFinger)
-   sprantic.ai.        300    IN    A       <server-ip-from-output>
+   example.com.        300    IN    A       <server-ip-from-output>
    
    # Keycloak subdomain
-   auth.sprantic.ai.   300    IN    A       <server-ip-from-output>
+   auth.example.com.   300    IN    A       <server-ip-from-output>
    ```
 
 5. **Verify WebFinger**
    ```bash
    # Test WebFinger endpoint
    curl -H "Accept: application/jrd+json" \
-        "https://sprantic.ai/.well-known/webfinger?resource=acct:admin@sprantic.ai"
+        "https://example.com/.well-known/webfinger?resource=acct:admin@example.com"
    ```
 
 6. **Configure Tailscale**
@@ -67,12 +67,12 @@ This example demonstrates how to deploy Keycloak with WebFinger configuration fo
 
 ```dns
 # Required DNS records
-sprantic.ai.        300    IN    A       <server-ip>
-auth.sprantic.ai.   300    IN    A       <server-ip>
+example.com.        300    IN    A       <server-ip>
+auth.example.com.   300    IN    A       <server-ip>
 
 # If IPv6 is enabled
-sprantic.ai.        300    IN    AAAA    <server-ipv6>
-auth.sprantic.ai.   300    IN    AAAA    <server-ipv6>
+example.com.        300    IN    AAAA    <server-ipv6>
+auth.example.com.   300    IN    AAAA    <server-ipv6>
 ```
 
 ## Tailscale Configuration
@@ -81,7 +81,7 @@ auth.sprantic.ai.   300    IN    AAAA    <server-ipv6>
 2. Navigate to **Settings** → **SSO**
 3. Choose **Custom OIDC**
 4. Use these values from Terraform outputs:
-   - **Issuer URL**: `https://auth.sprantic.ai/realms/sprantic`
+   - **Issuer URL**: `https://auth.example.com/realms/example`
    - **Client ID**: (from Keycloak realm configuration)
    - **Client Secret**: (from Keycloak realm configuration)
 
@@ -94,7 +94,7 @@ The WebFinger endpoint returns:
   "links": [
     {
       "rel": "http://openid.net/specs/connect/1.0/issuer",
-      "href": "https://auth.sprantic.ai/realms/sprantic"
+      "href": "https://auth.example.com/realms/example"
     }
   ]
 }
@@ -106,14 +106,14 @@ Test the setup:
 
 ```bash
 # 1. Verify Keycloak is accessible
-curl -f https://auth.sprantic.ai/health
+curl -f https://auth.example.com/health
 
 # 2. Verify WebFinger endpoint
 curl -H "Accept: application/jrd+json" \
-     "https://sprantic.ai/.well-known/webfinger?resource=acct:test@sprantic.ai"
+     "https://example.com/.well-known/webfinger?resource=acct:test@example.com"
 
 # 3. Verify OIDC discovery
-curl https://auth.sprantic.ai/realms/sprantic/.well-known/openid-configuration
+curl https://auth.example.com/realms/sprantic/.well-known/openid-configuration
 ```
 
 ## Troubleshooting
@@ -121,8 +121,8 @@ curl https://auth.sprantic.ai/realms/sprantic/.well-known/openid-configuration
 ### DNS Issues
 ```bash
 # Check DNS resolution
-nslookup sprantic.ai
-nslookup auth.sprantic.ai
+nslookup example.com
+nslookup auth.example.com
 
 # Both should return the same IP address
 ```
@@ -133,8 +133,8 @@ nslookup auth.sprantic.ai
 ssh admin@<server-ip> 'docker logs keycloak-caddy-1'
 
 # Verify certificates
-openssl s_client -connect sprantic.ai:443 -servername sprantic.ai
-openssl s_client -connect auth.sprantic.ai:443 -servername auth.sprantic.ai
+openssl s_client -connect example.com:443 -servername example.com
+openssl s_client -connect auth.example.com:443 -servername auth.example.com
 ```
 
 ### WebFinger Issues

@@ -76,7 +76,7 @@ output "webfinger_domain" {
 
 output "oidc_issuer_url" {
   description = "OIDC issuer URL for WebFinger response"
-  value       = var.enable_webfinger ? (var.oidc_issuer_url != "" ? var.oidc_issuer_url : "https://${var.keycloak_subdomain}.${var.domain_name}/realms/sprantic") : null
+  value       = var.enable_webfinger ? (var.oidc_issuer_url != "" ? var.oidc_issuer_url : "https://${var.keycloak_subdomain}.${var.domain_name}/realms/example") : null
 }
 
 # DNS Configuration Requirements
@@ -117,7 +117,7 @@ output "dns_records_required" {
 # Validation Commands
 output "webfinger_validation_command" {
   description = "Command to validate WebFinger configuration"
-  value = var.enable_webfinger ? "bash ${path.module}/scripts/validate-webfinger.sh ${var.webfinger_domain} ${var.oidc_issuer_url != "" ? var.oidc_issuer_url : "https://${var.keycloak_subdomain}.${var.domain_name}/realms/sprantic"}" : null
+  value = var.enable_webfinger ? "bash ${path.module}/scripts/validate-webfinger.sh ${var.webfinger_domain} ${var.oidc_issuer_url != "" ? var.oidc_issuer_url : "https://${var.keycloak_subdomain}.${var.domain_name}/realms/example"}" : null
 }
 
 output "webfinger_validation_instructions" {
