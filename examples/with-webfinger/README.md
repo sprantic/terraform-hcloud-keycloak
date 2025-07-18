@@ -113,7 +113,7 @@ curl -H "Accept: application/jrd+json" \
      "https://example.com/.well-known/webfinger?resource=acct:test@example.com"
 
 # 3. Verify OIDC discovery
-curl https://auth.example.com/realms/sprantic/.well-known/openid-configuration
+curl https://auth.example.com/realms/example/.well-known/openid-configuration
 ```
 
 ## Troubleshooting

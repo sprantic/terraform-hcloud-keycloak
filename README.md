@@ -203,18 +203,18 @@ For Tailscale SSO integration, you need to enable WebFinger to provide OIDC disc
 ```hcl
 # Enable WebFinger for Tailscale SSO
 enable_webfinger = true
-webfinger_domain = "sprantic.ai"  # Your main domain (without subdomain)
-oidc_issuer_url = "https://auth.sprantic.ai/realms/sprantic"  # Your Keycloak realm URL
-webfinger_email = "admin@sprantic.ai"  # Email address for WebFinger subject
+webfinger_domain = "example.com"  # Your main domain (without subdomain)
+oidc_issuer_url = "https://auth.example.com/realms/example"  # Your Keycloak realm URL
+webfinger_email = "admin@example.com"  # Email address for WebFinger subject
 ```
 
 This configuration:
-- Creates a WebFinger endpoint at `https://sprantic.ai/.well-known/webfinger`
+- Creates a WebFinger endpoint at `https://example.com/.well-known/webfinger`
 - Serves the OIDC issuer URL for domain discovery
 - Required for Tailscale custom OIDC provider setup
 
 **Important**:
-- The WebFinger endpoint must be served from your main domain (e.g., `sprantic.ai`), not the Keycloak subdomain (`auth.sprantic.ai`).
+- The WebFinger endpoint must be served from your main domain (e.g., `example.com`), not the Keycloak subdomain (`auth.example.com`).
 - The `oidc_issuer_url` must exactly match the `issuer` field in your Keycloak's `/.well-known/openid-configuration` endpoint.
 - Use the provided validation script to verify the configuration before configuring Tailscale.
 

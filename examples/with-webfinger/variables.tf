@@ -10,7 +10,7 @@ variable "hcloud_ssh_key" {
 }
 
 variable "domain_name" {
-  description = "Domain name for the Keycloak instance (e.g., 'sprantic.ai')"
+  description = "Domain name for the Keycloak instance (e.g., 'example.com')"
   type        = string
 }
 

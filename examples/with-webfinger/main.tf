@@ -27,8 +27,8 @@ module "keycloak" {
   
   # WebFinger configuration for Tailscale SSO
   enable_webfinger        = true
-  webfinger_domain        = var.domain_name  # Main domain (e.g., "sprantic.ai")
-  oidc_issuer_url         = "https://auth.${var.domain_name}/realms/sprantic"
+  webfinger_domain        = var.domain_name  # Main domain (e.g., "example.com")
+  oidc_issuer_url         = "https://auth.${var.domain_name}/realms/example"
   webfinger_email         = var.webfinger_email
   
   # Optional: External database
